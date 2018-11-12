@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+    <!--配置dao数据源及mapper start-->
+
+    <!-- 解析jdbc配置文件 -->
+    <context:property-placeholder location="classpath:resource/jdbc.properties" ignore-unresolvable="true" />
+
+    <!-- 配置数据源 -->
+    <!-- don't forget the DataSource -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+          destroy-method="close">
+        <property name="driverClass" value="${dataSource.driverClass}"/>
+        <property name="jdbcUrl" value="${dataSource.jdbcUrl}"/>
+        <property name="user" value="${dataSource.username}"/>
+        <property name="password" value="${dataSource.password}"/>
+    </bean>
+
+    <!-- 配置mybatis通用mapper start -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean"
+          p:dataSource-ref="dataSource" p:configLocation="classpath:mybatis/mybatis.xml"
+          p:typeAliasesPackage="com.frame.*.domain">
+        <property name="mapperLocations">
+            <list>
+                <value>com/frame/*/mapper/*.xml</value>
+            </list>
+        </property>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.abel533.mapperhelper.MapperInterceptor">
+                    <property name="properties">
+                        <value>
+                            mappers=com.github.abel533.mapper.Mapper
+                            IDENTITY=MYSQL
+                            notEmpty=true
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <!-- 配置Mapper扫描 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"
+          p:basePackage="com.frame.*.mapper,com.github.abel533.mapper"
+          p:sqlSessionFactoryBeanName="sqlSessionFactory">
+    </bean>
+
+    <!--配置dao数据源及mapper end-->
+
+    <!-- Service层扫描 -->
+    <context:component-scan base-package="com.frame" />
+    <context:annotation-config />
+
+    <!-- the transactional advice (what 'happens'; see the <aop:advisor/> bean
+        below) 事务传播特性配置 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <!-- the transactional semantics... -->
+        <tx:attributes>
+            <tx:method name="add*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+            <tx:method name="save*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+            <tx:method name="insert*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+            <tx:method name="update*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+            <tx:method name="modify*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+            <tx:method name="delete*" propagation="REQUIRED" isolation="DEFAULT" rollback-for="java.lang.Exception" />
+            <!-- 查询方法 -->
+            <tx:method name="query*" read-only="true" />
+            <tx:method name="select*" read-only="true" />
+            <tx:method name="find*" read-only="true" />
+            <tx:method name="get*" read-only="true" />
+
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 配置事务管理器 -->
+    <bean id="txManager"  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!-- 声明式事务AOP配置 -->
+    <aop:config>
+        <aop:pointcut expression="execution(* com.frame.*.service.*(..))" id="tranpointcut" />
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="tranpointcut" />
+    </aop:config>
+    <!-- 开启事务注解 -->
+    <tx:annotation-driven transaction-manager="txManager" />
+
+    <bean id="ServiceBeanUtil" class="com.frame.ssm.common.utils.ServiceBeanUtil"/>
+</beans>

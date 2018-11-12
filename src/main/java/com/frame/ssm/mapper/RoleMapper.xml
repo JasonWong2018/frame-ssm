@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frame.ssm.mapper.RoleMapper">
+    <resultMap id="queryResultMap" type="com.frame.ssm.domain.Role">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <!-- 父id -->
+        <result column="p_id" property="pId" jdbcType="INTEGER"/>
+        <!-- 角色名称 -->
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <!-- 创建者用户id -->
+        <result column="create_user_id" property="createUserId" jdbcType="INTEGER"/>
+        <!-- 创建时间 -->
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <!-- 修改时间 -->
+        <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP"/>
+        <!-- 1.有效0.隐性删除 -->
+        <result column="status" property="status" jdbcType="TINYINT"/>
+
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+
+        <collection property="functions" ofType="com.frame.ssm.domain.Function" select="com.frame.ssm.mapper.FunctionMapper.getFunctionListByRoleId" column="id">
+        </collection>
+    </resultMap>
+
+    <sql id="baseSelectsql">t.id , t.p_id , t.name , t.create_user_id , DATE_FORMAT(t.create_time,'%Y-%m-%d %H:%i:%s') AS create_time , DATE_FORMAT(t.modify_time,'%Y-%m-%d %H:%i:%s') AS modify_time , t.status , t.code</sql>
+    <sql id="baseMapSelectsql">t.id AS id , t.p_id AS pId , t.name AS name , t.create_user_id AS createUserId , DATE_FORMAT(t.create_time,'%Y-%m-%d %H:%i:%s') AS createTime , DATE_FORMAT(t.modify_time,'%Y-%m-%d %H:%i:%s') AS modifyTime , t.status AS status ,t.code AS code</sql>
+
+
+    <select id="getRoleListByUserId" resultMap="queryResultMap" parameterType="int">
+        select <include refid="baseSelectsql"/>
+        from t_sys_role t ,t_sys_user_role a where t.id = a.role_id and a.user_id = #{userId}
+    </select>
+</mapper>

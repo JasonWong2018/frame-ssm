@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frame.ssm.mapper.FunctionMapper">
+    <resultMap id="queryResultMap" type="com.frame.ssm.domain.Function">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <!-- 功能名称 -->
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <!-- 父id -->
+        <result column="p_id" property="pId" jdbcType="INTEGER"/>
+        <!-- 功能地址 -->
+        <result column="url" property="url" jdbcType="VARCHAR"/>
+        <!-- 功能简介 -->
+        <result column="note" property="note" jdbcType="VARCHAR"/>
+        <!-- 功能图标 -->
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <!-- 功能排序 -->
+        <result column="order_by" property="orderBy" jdbcType="TINYINT"/>
+        <!-- 创建时间 -->
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <!-- 修改时间 -->
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+        <!-- 所属系统 0 管理系统 -->
+        <result column="type" property="type" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="baseSelectsql">t.id , t.name , t.p_id , t.url , t.note , t.icon , t.order_by , DATE_FORMAT(t.create_time,'%Y-%m-%d %H:%i:%s') AS create_time , DATE_FORMAT(t.update_time,'%Y-%m-%d %H:%i:%s') AS update_time , t.type</sql>
+    <sql id="baseMapSelectsql">t.id AS id , t.name AS name , t.p_id AS pId , t.url AS url , t.note AS note , t.icon AS icon , t.order_by AS orderBy , DATE_FORMAT(t.create_time,'%Y-%m-%d %H:%i:%s') AS createTime , DATE_FORMAT(t.update_time,'%Y-%m-%d %H:%i:%s') AS updateTime , t.type AS type</sql>
+
+    <select id="getFunctionListByRoleId" parameterType="int" resultMap="queryResultMap">
+        select <include refid="baseSelectsql"/>
+        from t_sys_function t INNER JOIN t_sys_role b INNER JOIN t_sys_role_function c
+        ON t.id = c.function_id and b.id = c.role_id and c.role_id = #{roleId}
+    </select>
+</mapper>
