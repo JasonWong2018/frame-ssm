@@ -49,6 +49,8 @@
                 <!-- 配置登出：使用logout过滤器 -->
                 /login.do = anon
                 /shiroLogin.do = anon
+                /listener/init.do = anon
+                /interceptor/init.do = anon
                 /test/** = anon
                 /user/userList.do = roles["superadmin","admin"]
                 /user/** = anon
